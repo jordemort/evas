@@ -1,0 +1,93 @@
+#!/usr/bin/make -f
+
+CFLAGS += -fvisibility=hidden
+
+ifeq (hppa,$(DEB_HOST_ARCH))
+	arch_flags += --disable-pthreads
+else
+	arch_flags += --enable-pthreads
+endif
+
+ifeq (linux,$(DEB_HOST_ARCH_OS))
+	arch_flags += --enable-fb
+endif
+
+binary: binary-indep binary-arch
+binary-indep: build-doc-stamp
+
+build-doc-stamp: build
+	$(MAKE) doc
+	touch $@
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+	--enable-strict \
+	--enable-fontconfig \
+	--enable-fribidi \
+	--enable-software-xlib \
+	--enable-static-software-generic \
+	--enable-buffer \
+	--enable-gl-xlib \
+	--disable-directfb \
+	--enable-image-loader-gif \
+	--enable-image-loader-png \
+	--enable-image-loader-jpeg \
+	--enable-image-loader-eet \
+	--enable-font-loader-eet \
+	--enable-image-loader-tiff \
+	--enable-image-loader-xpm \
+	--disable-image-loader-svg \
+	--enable-scale-sample \
+	--enable-scale-smooth \
+	--enable-convert-yuv \
+	--enable-small-dither-mask \
+	--disable-no-dither-mask \
+	--enable-convert-8-rgb-332 \
+	--enable-convert-8-rgb-666 \
+	--enable-convert-8-rgb-232 \
+	--enable-convert-8-rgb-222 \
+	--enable-convert-8-rgb-221 \
+	--enable-convert-8-rgb-121 \
+	--enable-convert-8-rgb-111 \
+	--enable-convert-16-rgb-565 \
+	--enable-convert-16-bgr-565 \
+	--enable-convert-16-rgb-555 \
+	--enable-convert-16-rgb-444 \
+	--enable-convert-16-rgb-ipq \
+	--enable-convert-16-rgb-rot-0 \
+	--enable-convert-16-rgb-rot-180 \
+	--enable-convert-16-rgb-rot-270 \
+	--enable-convert-16-rgb-rot-90 \
+	--enable-convert-24-rgb-888 \
+	--enable-convert-24-bgr-888 \
+	--enable-convert-32-rgb-8888 \
+	--enable-convert-32-rgbx-8888 \
+	--enable-convert-32-bgr-8888 \
+	--enable-convert-32-bgrx-8888 \
+	--enable-convert-32-rgb-rot-0 \
+	--enable-convert-32-rgb-rot-180 \
+	--enable-convert-32-rgb-rot-270 \
+	--enable-convert-32-rgb-rot-90 \
+	--disable-image-loader-edb \
+	--disable-software-8-x11 \
+	--disable-software-16-x11 \
+	--enable-doc \
+	$(arch_flags)
+	dh_auto_configure -Dgeneric-loaders
+
+override_dh_auto_build:
+	dh_auto_build
+	dh_auto_build -Dgeneric-loaders
+
+override_dh_auto_install:
+	dh_auto_install
+	dh_auto_install -Dgeneric-loaders
+
+override_dh_makeshlibs:
+	dh_makeshlibs -V
+
+override_dh_strip:
+	dh_strip --dbg-package=libevas-dbg
